@@ -42,7 +42,7 @@ start = time()
 print("[n]", "[Downloading file from...]")
 print("-"*80)
 
-for i, j in enumerate(search(query, tld="com", num=args.page, stop=args.result, pause=10.0,)):
+for i, j in enumerate(search(query, tld="com", num=args.page, stop=args.result, pause=10.0,), 1):
     print(i, unquote(j))
     # ignore bad request
     try:
