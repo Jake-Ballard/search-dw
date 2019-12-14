@@ -40,7 +40,7 @@ os.chdir(dirName)
 start = time()
 
 print("[n]", "[Downloading file from...]")
-print("-"*80)
+print("-"*100)
 
 for i, j in enumerate(search(query, tld="com", num=args.page, stop=args.result, pause=10.0,), 1):
     print(i, unquote(j))
@@ -62,5 +62,5 @@ for i, j in enumerate(search(query, tld="com", num=args.page, stop=args.result, 
             f.write(r.content)
     except:
         pass
-print("-"*80)
+print("-"*100)
 print(f"Time to download: {time() - start}")
