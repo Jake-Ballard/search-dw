@@ -14,11 +14,23 @@ def msg(name=None):
           -e or --ext,                Filetype of searched file
           -p or --page   [optional],  Number of google page to consider
           -r or --result [optional],  Result limit
-         
+
          Example:
             1. python3 search-dw.py -s "Ruby doc" -e pdf
-            2. puthon3 search-dw.py -s forking -e ppt -p 10 -r 5 
+            2. puthon3 search-dw.py -s forking -e ppt -p 10 -r 5
          '''
+
+
+def setFileName(j):
+    # set file name and check ext
+    fileNameRetrieved = j.split("/")
+    fileName = unquote(fileNameRetrieved[len(fileNameRetrieved)-1])
+    testExt = fileName[len(fileName)-4:len(fileName)]
+
+    if testExt.lower() != "." + args.ext.lower():
+        fileName += "." + args.ext.lower()
+
+    return fileName
 
 
 p = argparse.ArgumentParser(usage=msg())
@@ -46,30 +58,30 @@ except:
 os.chdir(dirName)
 
 # Set counter & monitor time exec
+i = 0
 start = time()
 
 print()
-print("Downloading file from...")
+print("Downloading file...")
+print()
 
-for i, j in enumerate(search(query, tld="com", num=args.page, stop=args.result, pause=10.0,), 1):
-    print(i, unquote(j))
-    # ignore bad request
+for j in search(query, tld="com", num=args.page, stop=args.result, pause=10.0,):
+    # ignore bad request and move on
     try:
         r = requests.get(j, timeout=5)
-    except:
-        pass
-    # set file name and check ext
-    fileNameRetrieved = j.split("/")
-    fileName = unquote(fileNameRetrieved[len(fileNameRetrieved)-1])
-    testExt = fileName[len(fileName)-4:len(fileName)]
 
-    # download file and ignore errors
-    try:
-        if testExt.lower() != "." + args.ext.lower():
-            fileName += "." + args.ext.lower()
-        with open(fileName, "wb") as f:
-            f.write(r.content)
+        # get file size of file retrieved
+        size = int(r.headers['Content-length'])/1000000
+
+        # download only file > 0.5 MB
+        if (size > 0.5):
+            i += 1
+            fileN = setFileName(j)
+            print(i, fileN, str(round(size, 1)) + " MB")
+            with open(fileN, "wb") as f:
+                f.write(r.content)
     except:
         pass
+
 print()
 print(f"Time to download: {time() - start}")
