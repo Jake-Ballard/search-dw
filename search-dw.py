@@ -5,7 +5,7 @@ from googlesearch import search
 from urllib.parse import unquote
 from time import time
 
-# Check arguments from command line customizing msg
+# Custom message from argparse
 
 
 def msg(name=None):
@@ -20,6 +20,8 @@ def msg(name=None):
             2. puthon3 search-dw.py -s forking -e ppt -p 10 -r 5
          '''
 
+# Set file name based on url retrived
+
 
 def setFileName(j):
     # set file name and check ext
@@ -33,6 +35,7 @@ def setFileName(j):
     return fileName
 
 
+# Manage argument from command line
 p = argparse.ArgumentParser(usage=msg())
 
 p.add_argument('-s', '--search', type=str, required=True)
@@ -54,7 +57,7 @@ try:
 except:
     pass
 
-# move in download dir
+# Move in download dir
 os.chdir(dirName)
 
 # Set counter & monitor time exec
@@ -66,14 +69,14 @@ print("Downloading file...")
 print()
 
 for j in search(query, tld="com", num=args.page, stop=args.result, pause=10.0,):
-    # ignore bad request and move on
+    # Ignore bad request and move on
     try:
         r = requests.get(j, timeout=5)
 
-        # get file size of file retrieved
+        # Get file size of file retrieved
         size = int(r.headers['Content-length'])/1000000
 
-        # download only file > 0.5 MB
+        # Download only file > 0.5 MB
         if (size > 0.5):
             i += 1
             fileN = setFileName(j)
