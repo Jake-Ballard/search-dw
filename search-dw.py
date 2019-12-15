@@ -68,7 +68,7 @@ print()
 print("Downloading file...")
 print()
 
-for j in search(query, tld="com", num=args.page, stop=args.result, pause=10.0,):
+for j in search(query, tld="com", num=args.page, stop=args.result, pause=10.0):
     # Ignore bad request and move on
     try:
         r = requests.get(j, timeout=5)
