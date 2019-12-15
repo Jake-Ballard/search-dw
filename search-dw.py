@@ -5,19 +5,28 @@ from googlesearch import search
 from urllib.parse import unquote
 from time import time
 
+# Check arguments from command line customizing msg
 
-# Check arguments from command line
-s_desc = "What to search (keyword)"
-e_desc = "Filetype of searched file (pdf or ppt or ...)"
-p_desc = "Number of google page to consider (10 or 20 or ...)"
-r_desc = "Result limit (10 or 30 or ...)"
 
-p = argparse.ArgumentParser()
+def msg(name=None):
+    return '''search-dw.py
+          -s or --search,             What to search...
+          -e or --ext,                Filetype of searched file
+          -p or --page   [optional],  Number of google page to consider
+          -r or --result [optional],  Result limit
+         
+         Example:
+            1. python3 search-dw.py -s "Ruby doc" -e pdf
+            2. puthon3 search-dw.py -s forking -e ppt -p 10 -r 5 
+         '''
 
-p.add_argument('-s', '--search', type=str, help=s_desc, required=True)
-p.add_argument('-e', '--ext', type=str, help=e_desc,  required=True)
-p.add_argument('-p', '--page', type=int, default=10, help=p_desc)
-p.add_argument('-r', '--result', type=int, default=20,     help=r_desc)
+
+p = argparse.ArgumentParser(usage=msg())
+
+p.add_argument('-s', '--search', type=str, required=True)
+p.add_argument('-e', '--ext', type=str, required=True)
+p.add_argument('-p', '--page', type=int, default=10)
+p.add_argument('-r', '--result', type=int, default=20)
 
 args = p.parse_args()
 
@@ -39,8 +48,8 @@ os.chdir(dirName)
 # Set counter & monitor time exec
 start = time()
 
-print("[n]", "[Downloading file from...]")
-print("-"*100)
+print()
+print("Downloading file from...")
 
 for i, j in enumerate(search(query, tld="com", num=args.page, stop=args.result, pause=10.0,), 1):
     print(i, unquote(j))
@@ -62,5 +71,5 @@ for i, j in enumerate(search(query, tld="com", num=args.page, stop=args.result, 
             f.write(r.content)
     except:
         pass
-print("-"*100)
+print()
 print(f"Time to download: {time() - start}")
