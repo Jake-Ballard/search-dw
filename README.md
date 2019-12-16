@@ -2,7 +2,7 @@
 **search-dw** is a Python utility to automate "search and download" via google search.
 	
 ## Getting Started
-To run this project, you need to have **Python3 installed** on your system and you also need to install the following pip:
+To run this script, you need to have **Python3 installed** on your system and you also need to install the following pip:
 
 ```
 $ pip3 install bs4
