@@ -27,6 +27,6 @@ Your suggestions are kindly [welcome](https://github.com/Jake-Ballard/search-dw/
 
 ## Warning
 
-Use the following script at your own risk.  
+Use the **search-dw.py** script at your own risk.  
 
 
