@@ -16,7 +16,7 @@ $ pip3 install urllib3
 
 ```
 $ python3 search-dw.py -s "Ruby doc" -e pdf
-$ python3 search-dw.py -s forking -e ppt -p 10 -r 5
+$ python3 search-dw.py -s "Security Workshop" -e ppt -p 10 -r 5
 
 ```
 
