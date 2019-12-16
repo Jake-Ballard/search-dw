@@ -21,6 +21,6 @@ $ pip3 install urllib3
 
 ## Disclamer
 
-* Use the following information at your own risk.  
+* Use the following script at your own risk.  
 * No warranty is offered, implied or expressed.
 
