@@ -17,7 +17,7 @@ def msg(name=None):
 
          Example:
             1. python3 search-dw.py -s "Ruby doc" -e pdf
-            2. puthon3 search-dw.py -s forking -e ppt -p 10 -r 5
+            2. python3 search-dw.py -s forking -e ppt -p 10 -r 5
          '''
 
 # Set file name based on url retrived
