@@ -74,7 +74,7 @@ try:
     for j in search(query, tld="com", num=args.page, stop=args.result, pause=10.0):
         # Ignore bad request and move on
         try:
-            r = requests.get(j, timeout=10, headers=headers)
+            r = requests.get(j, timeout=5, headers=headers)
             # Get file size of file retrieved
             size = int(r.headers['Content-length'])/1000000
             # Download only file > 0.5 MB
