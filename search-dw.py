@@ -1,13 +1,18 @@
+# What is: search-dw is a Python utility to automate "search and download" via google search.
+#
+# Keep UP2Date here: https://github.com/Jake-Ballard/search-dw.git
+
 import os
 import argparse
 import requests
+from time import time
+from clint.textui import progress
 from googlesearch import search
 from urllib.parse import unquote
 from urllib.error import HTTPError
-from time import time
-from clint.textui import progress
-# Custom message from argparse
 
+
+# Custom message from argparse
 
 def msg(name=None):
     return '''search-dw.py
@@ -89,7 +94,7 @@ try:
         except:
             pass
 except HTTPError as e:
-    print("Houston we've got a problem!!!")
+    print("Houston, we've got a problem!!!")
     print(e.headers)
 print()
 
