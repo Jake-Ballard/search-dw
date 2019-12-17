@@ -21,14 +21,17 @@ git clone https://github.com/Jake-Ballard/search-dw.git && cd search-dw
 ### Examples
 Here you are some examples that shows you how to search and download somenthing based on one or more keywords.
 ```
-$ python3 search-dw.py -s "Ruby doc" -e pdf
+$ python3 search-dw.py -s "debian official" -e pdf -r 3
 
-$ python3 search-dw.py -s "Security Workshop" -e ppt -p 10 -r 5
+```
+[![search-dw - example 1](https://github.com/Jake-Ballard/search-dw/blob/master/ex_1.PNG)](#features)
 
-$ python3 search-dw.py -s "Project Management Test Exercise" -e pdf -p 20 -r 40
+```
+$ python3 search-dw.py -s "vim tutorial" -e pdf -r 5
 
 ```
 
+[![search-dw - example 2](https://github.com/Jake-Ballard/search-dw/blob/master/ex_2.PNG)](#features)
 
 ## Feedback
 
