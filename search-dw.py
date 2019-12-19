@@ -29,12 +29,17 @@ def msg(name=None):
 
 
 def setFileName(j):
-    # set file name and check ext
-    fileNameRetrieved = j.split("/")
-    fileName = unquote(fileNameRetrieved[len(fileNameRetrieved)-1])
-    testExt = fileName[len(fileName)-4:len(fileName)]
+    # set file name and prepare ext
+    t_fileName = j.split("/")
+    t_fileName = unquote(t_fileName[len(t_fileName)-1])
+    ext = t_fileName[len(t_fileName)-4:len(t_fileName)]
 
-    if testExt.lower() != "." + args.ext.lower():
+    # clean file name
+    fileName = t_fileName.split("?")
+    fileName = fileName[len(fileName)-1]
+
+    # add extension if needed
+    if ext.lower() != "." + args.ext.lower():
         fileName += "." + args.ext.lower()
 
     return fileName
@@ -66,14 +71,16 @@ except:
 os.chdir(dirName)
 
 # Set counter & monitor time exec & prepare header
-i = 0
-start = time()
+i, t = 0, time()
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
-print()
-print("Downloading of << " + args.search + " >> is started. Be patient :-)")
-print()
+
+print(
+    '''
+Downloading of << " + args.search + " >> is started. Be patient :-)
+    '''
+)
 
 try:
     for j in search(query, tld="com", num=args.page, stop=args.result, pause=10.0):
@@ -84,20 +91,19 @@ try:
             size = int(r.headers['Content-length'])
             # Download only file > 100 KB
             if (size > 100000):
-                i += 1
                 fileN = setFileName(j)
                 with open(fileN, "wb") as f:
                     for bar in progress.bar(r.iter_content(chunk_size=1024), expected_size=(size/1024) + 1, label=fileN + " - "):
                         if bar:
                             f.write(bar)
                             f.flush()
+                i += 1
         except:
             pass
 except HTTPError as e:
     print("Houston, we've got a problem!!!")
     print(e.headers)
-print()
 
+# Prepare statistics
 f_dw = "file" if i == 1 else "files"
-
-print(f"Downloaded {i} {f_dw} in {time() - start} seconds")
+print(f"\nDownloaded {i} {f_dw} in {time() - t} seconds\n")
