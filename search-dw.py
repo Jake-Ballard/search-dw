@@ -76,11 +76,7 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
 
-print(
-    '''
-Downloading of << " + args.search + " >> is started. Be patient :-)
-    '''
-)
+print("Downloading of << " + args.search + " >> is started. Be patient :-)")
 
 try:
     for j in search(query, tld="com", num=args.page, stop=args.result, pause=10.0):
