@@ -3,6 +3,7 @@
 # Keep UP2Date here: https://github.com/Jake-Ballard/search-dw.git
 
 import os
+import re
 import argparse
 import requests
 from time import time
@@ -31,16 +32,12 @@ def msg(name=None):
 def setFileName(j):
     # set file name and prepare ext
     t_fileName = j.split("/")
-    t_fileName = unquote(t_fileName[len(t_fileName)-1])
-    ext = t_fileName[len(t_fileName)-4:len(t_fileName)]
+    t_fileName = unquote(t_fileName[-1])
+    ext = t_fileName[-4:]
 
     # clean file name
-    fileName = t_fileName.split("?")
-    fileName = fileName[len(fileName)-1]
-
-    # add extension if needed
-    if ext.lower() != "." + args.ext.lower():
-        fileName += "." + args.ext.lower()
+    fileName = "".join(re.findall("[a-zA-Z]+", t_fileName[:-4]))
+    fileName += args.ext.lower()
 
     return fileName
 
@@ -75,13 +72,12 @@ i, t = 0, time()
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
-
 sdsc = "\nDownloading of << " + args.search + " >> is started. Be patient :-)\n"
 
 print(sdsc)
 
 try:
-    for j in search(query, tld="com", num=args.page, stop=args.result, pause=10.0):
+    for j in search(query, tld="com", num=args.page, stop=args.result, pause=20.0,  user_agent=headers['User-Agent']):
         # Ignore bad request and move on
         try:
             r = requests.get(j, timeout=5, headers=headers)
@@ -98,10 +94,14 @@ try:
                 i += 1
         except:
             pass
-except HTTPError as e:
-    print("Houston, we've got a problem!!!")
-    print(e.headers)
 
-# Prepare statistics
-f_dw = "file" if i == 1 else "files"
-print(f"\nDownloaded {i} {f_dw} in {time() - t} seconds\n")
+    # Prepare statistics
+    f_dw = "file" if i == 1 else "files"
+    print(f"\nDownloaded {i} {f_dw} in {time() - t} seconds\n")
+
+except HTTPError as e:
+    print("Houston, we've got a problem!!!\n")
+    if (e.getcode() == 429):
+        print("Stop now!!!\nToo many requests, wait and retry later!\n")
+    else:
+        print(e)
