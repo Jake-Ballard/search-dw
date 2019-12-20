@@ -37,7 +37,7 @@ def setFileName(j):
 
     # clean file name
     fileName = "".join(re.findall("[a-zA-Z]+", t_fileName[:-4]))
-    fileName += args.ext.lower()
+    fileName += "." + args.ext.lower()
 
     return fileName
 
