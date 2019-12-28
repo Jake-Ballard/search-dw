@@ -8,6 +8,9 @@ To run this script, you need to have **Python3 installed** on your system.
 The following pip are needed.
 ```
 $ pip3 install bs4
+
+$ pip3 install requests
+
 $ pip3 install urllib3
 
 ```
