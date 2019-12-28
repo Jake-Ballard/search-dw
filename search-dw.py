@@ -2,106 +2,157 @@
 #
 # Keep UP2Date here: https://github.com/Jake-Ballard/search-dw.git
 
+
 import os
 import re
-import argparse
 import requests
-from time import time
-from clint.textui import progress
-from googlesearch import search
+import logging
+import argparse
+from bs4 import BeautifulSoup
+from datetime import datetime
 from urllib.parse import unquote
-from urllib.error import HTTPError
 
 
-# Custom message from argparse
-
-def msg(name=None):
+def msg():
     return '''search-dw.py
-          -s or --search,             What to search...
-          -e or --ext,                Filetype of searched file
-          -p or --page   [optional],  Number of google page to consider
-          -r or --result [optional],  Result limit
+          -s or --search,               What to search...
+          -e or --ext,                  Filetype of searched file
+          -d or --dw        [optional], Download directory
+          -l or --log       [optional], Log directory
+          -r or --result    [optional], Result limit
          Example:
             1. python3 search-dw.py -s "Ruby doc" -e pdf
             2. python3 search-dw.py -s "Security Workshop" -e ppt -p 10 -r 5
          '''
 
-# Set file name based on url retrived
+
+def start_log(log_dir):
+    log = logging.getLogger()
+    log.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        '%(asctime)s | %(levelname)-8s | %(message)s')
+
+    vh = logging.StreamHandler()
+    vh.setFormatter(formatter)
+    log.addHandler(vh)
+
+    logfile = datetime.now().strftime(log_dir+'/logfile_%H_%M_%d_%m_%Y.log')
+
+    fh = logging.FileHandler(logfile)
+    formatter = logging.Formatter(
+        '%(asctime)s | %(levelname)-8s | %(message)s')
+    fh.setFormatter(formatter)
+
+    log.addHandler(fh)
+
+    return log
 
 
-def setFileName(j):
-    # set file name and prepare ext
-    t_fileName = j.split("/")
-    t_fileName = unquote(t_fileName[-1])
-    ext = t_fileName[-4:]
+def setDirectory(dw_dir, log_dir):
+    try:
+        os.mkdir(dw_dir)
+    except FileExistsError:
+        pass
 
-    # clean file name
-    fileName = "".join(re.findall("[a-zA-Z]+", t_fileName[:-4]))
-    fileName += "." + args.ext.lower()
+    try:
+        os.mkdir(log_dir)
+    except FileExistsError:
+        pass
 
-    return fileName
 
-
-# Manage argument from command line
 p = argparse.ArgumentParser(usage=msg())
 
 p.add_argument('-s', '--search', type=str, required=True)
 p.add_argument('-e', '--ext', type=str, required=True)
-p.add_argument('-p', '--page', type=int, default=10)
-p.add_argument('-r', '--result', type=int, default=20)
+p.add_argument('-d', '--dw', type=str, default='dw')
+p.add_argument('-l', '--log', type=str, default='log')
+p.add_argument('-r', '--result', type=int, default=20, choices=range(1, 90))
 
 args = p.parse_args()
 
-# Set Google Query
-query = args.search + " filetype:" + args.ext
+setDirectory(args.dw, args.log)
 
-# Set downlod directory
-dirName = "dw"
+l = start_log(args.log)
 
-# Skip if exist
-try:
-    os.mkdir(dirName)
-except:
-    pass
-
-# Move in download dir
-os.chdir(dirName)
-
-# Set counter & monitor time exec & prepare header
-i, t = 0, time()
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
-sdsc = "\nDownloading of << " + args.search + " >> is started. Be patient :-)\n"
 
-print(sdsc)
+def setFileName(r, ext):
 
-try:
-    for j in search(query, tld="com", num=args.page, stop=args.result, pause=20.0,  user_agent=headers['User-Agent']):
-        # Ignore bad request and move on
-        try:
-            r = requests.get(j, timeout=5, headers=headers)
-            # Get file size of file retrieved
-            size = int(r.headers['Content-length'])
-            # Download only file > 100 KB
-            if (size > 100000):
-                fileN = setFileName(j)
-                with open(fileN, "wb") as f:
-                    for bar in progress.bar(r.iter_content(chunk_size=1024), expected_size=(size/1024) + 1, label=fileN + " - "):
-                        if bar:
-                            f.write(bar)
-                            f.flush()
-                i += 1
-        except:
-            pass
+    tmp_filename = r.split("/")
+    tmp_filename = unquote(tmp_filename[-1])
 
-    # Prepare statistics
-    f_dw = "file" if i == 1 else "files"
-    print(f"\nDownloaded {i} {f_dw} in {time() - t} seconds\n")
+    fileName = "".join(re.findall("[a-zA-Z]+", tmp_filename[:-4]))
+    fileName += "." + ext.lower()
+    return fileName
 
-except HTTPError as e:
-    print("Houston, we've got a problem!!!\n")
-    if (e.getcode() == 429):
-        print("Stop now!!!\nToo many requests, wait and retry later!\n")
-    else:
-        print(e)
+
+def saveRes(list, res, dw):
+
+    path = os.path.abspath(os.curdir) + "/" + args.dw
+    l.info("Saving %d files in %s started" % (res, path))
+
+    os.chdir(dw)
+
+    d_count = 1
+
+    for i in range(res):
+        j_master = list[i].get('href').replace('/url?q=', '').split("&")
+        j = j_master[0]
+        # discarding bad url & bad size (<100Kb)
+        if ((j[0:4] == "http") and (j[-3:] == args.ext)):
+            try:
+                r = requests.get(j, stream=True, headers=headers)
+                #l.info("Content Length: %s" % r.headers['Content-length'])
+                size = int(r.headers['Content-length'])
+                if (size > 100000):
+                    l.info("***** file nr. %d *****" % d_count)
+                    l.info("Downloading file: %s " % j)
+                    fileN = setFileName(j, args.ext)
+                    with open(fileN, "wb") as f:
+                        f.write(r.content)
+                        l.info("File %s downloaded correctly", fileN)
+                    d_count += 1
+            except Exception as e:
+                # pass
+                l.info("Error: %s", e)
+
+
+def getGoogleRes(query, directory):
+
+    l.info("Executing Google query...")
+    q = '+'.join(query.split())
+
+    url = 'https://google.com/search?q=' + q
+
+    l.info("Query is: %s", url)
+    res = requests.get(url, stream=True)
+    res.raise_for_status()
+
+    soup = BeautifulSoup(res.text, 'html.parser')
+    # l_List = soup.select('.r a')
+    l_list = soup.select('div#main > div > div > div > a')
+    n_res = min(args.result, len(l_list))
+
+    return saveRes(l_list, n_res, directory)
+
+
+def execute(query, directory, ext, result):
+
+    l.info("Program started...")
+    n = "&num="+str(result)
+    query += "+filetype:" + ext + n
+
+    getGoogleRes(query, directory)
+
+    l.info("Finished")
+
+
+def main():
+    l.info("Reading arguments...")
+    execute(args.search, args.dw, args.ext, args.result)
+
+
+if __name__ == '__main__':
+    main()
