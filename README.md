@@ -37,14 +37,14 @@ usage: search-dw.py
 Here you are some examples that shows you how to search and download somenthing based on one or more keywords.
 
 #### Nr. 1
-In this example we are looking for some file with the keywords **debian official** and file extension **pdf** and we want to limit result to **3** (leaving page parameter to default value, 10).
+In this example we are looking for some file with the keywords **debian official** and file extension **pdf** and we want to limit result to **3**.
 ```
 $ python3 search-dw.py -s "debian official" -e pdf -r 3
 
 ```
 
 #### Nr. 2
-In this example we are looking for some file with the keywords **vim tutorial** and file extension **pdf** and we want to limit result to **5** (leaving page parameter to default value, 10).
+In this example we are looking for some file with the keywords **vim tutorial** and file extension **pdf** and we want to limit result to **5**.
 ```
 $ python3 search-dw.py -s "vim tutorial" -e pdf -r 5
 
