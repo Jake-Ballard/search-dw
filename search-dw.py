@@ -22,7 +22,7 @@ def msg():
           -r or --result    [optional], Result limit
          Example:
             1. python3 search-dw.py -s "Ruby doc" -e pdf
-            2. python3 search-dw.py -s "Security Workshop" -e ppt -p 10 -r 5
+            2. python3 search-dw.py -s "Security Workshop" -e ppt -r 5
          '''
 
 
