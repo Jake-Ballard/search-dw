@@ -12,6 +12,10 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.parse import unquote
 
+l = logging.getLogger()
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
 
 def msg():
     return '''search-dw.py
@@ -51,31 +55,9 @@ def start_log(log_dir):
 def setDirectory(dw_dir, log_dir):
     try:
         os.mkdir(dw_dir)
-    except FileExistsError:
-        pass
-
-    try:
         os.mkdir(log_dir)
     except FileExistsError:
         pass
-
-
-p = argparse.ArgumentParser(usage=msg())
-
-p.add_argument('-s', '--search', type=str, required=True)
-p.add_argument('-e', '--ext', type=str, required=True)
-p.add_argument('-d', '--dw', type=str, default='dw')
-p.add_argument('-l', '--log', type=str, default='log')
-p.add_argument('-r', '--result', type=int, default=20, choices=range(1, 90))
-
-args = p.parse_args()
-
-setDirectory(args.dw, args.log)
-
-l = start_log(args.log)
-
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
 
 def setFileName(r, ext):
@@ -88,10 +70,10 @@ def setFileName(r, ext):
     return fileName
 
 
-def saveRes(list, res, dw):
+def saveRes(list, res, dw, ext):
 
-    path = os.path.abspath(os.curdir) + "/" + args.dw
-    l.info("Saving %d files in %s started" % (res, path))
+    path = os.path.abspath(os.curdir) + "/" + dw
+    l.info("Trying to get %d file in %s ..." % (res, path))
 
     os.chdir(dw)
 
@@ -101,25 +83,24 @@ def saveRes(list, res, dw):
         j_master = list[i].get('href').replace('/url?q=', '').split("&")
         j = j_master[0]
         # discarding bad url & bad size (<100Kb)
-        if ((j[0:4] == "http") and (j[-3:] == args.ext)):
+        if ((j[0:4] == "http") and (j[-3:] == ext)):
             try:
-                r = requests.get(j, stream=True, headers=headers)
-                #l.info("Content Length: %s" % r.headers['Content-length'])
+                r = requests.get(j, stream=True, headers=HEADERS)
                 size = int(r.headers['Content-length'])
                 if (size > 100000):
                     l.info("***** file nr. %d *****" % d_count)
                     l.info("Downloading file: %s " % j)
-                    fileN = setFileName(j, args.ext)
+                    fileN = setFileName(j, ext)
                     with open(fileN, "wb") as f:
                         f.write(r.content)
-                        l.info("File %s downloaded correctly", fileN)
+                        l.info("File %s downloaded correctly" % fileN)
                     d_count += 1
             except Exception as e:
-                # pass
-                l.info("Error: %s", e)
+                pass
+    l.info("Downloaded %d of %d file searched" % (d_count, res))
 
 
-def getGoogleRes(query, directory):
+def getGoogleRes(query, directory, result, ext):
 
     l.info("Executing Google query...")
     q = '+'.join(query.split())
@@ -131,11 +112,11 @@ def getGoogleRes(query, directory):
     res.raise_for_status()
 
     soup = BeautifulSoup(res.text, 'html.parser')
-    # l_List = soup.select('.r a')
-    l_list = soup.select('div#main > div > div > div > a')
-    n_res = min(args.result, len(l_list))
 
-    return saveRes(l_list, n_res, directory)
+    l_list = soup.select('div#main > div > div > div > a')
+    n_res = min(result, len(l_list))
+
+    return saveRes(l_list, n_res, directory, ext)
 
 
 def execute(query, directory, ext, result):
@@ -144,14 +125,33 @@ def execute(query, directory, ext, result):
     n = "&num="+str(result)
     query += "+filetype:" + ext + n
 
-    getGoogleRes(query, directory)
+    getGoogleRes(query, directory, result, ext)
 
     l.info("Finished")
 
 
 def main():
+    p = argparse.ArgumentParser(usage=msg())
+    p.add_argument('-s', '--search', type=str, required=True)
+    p.add_argument('-e', '--ext', type=str, required=True)
+    p.add_argument('-d', '--dw', type=str, default='dw')
+    p.add_argument('-l', '--log', type=str, default='log')
+    p.add_argument('-r', '--result', type=int,
+                   default=20, choices=range(1, 90))
+    args = p.parse_args()
+
+    a_s = args.search
+    a_e = args.ext
+    a_d = args.dw
+    a_l = args.log
+    a_r = args.result
+
+    setDirectory(a_d, a_l)
+
+    l = start_log(args.log)
     l.info("Reading arguments...")
-    execute(args.search, args.dw, args.ext, args.result)
+
+    execute(a_s, a_d, a_e, a_r)
 
 
 if __name__ == '__main__':
